@@ -1,15 +1,15 @@
 package com.keeplive.hln.utils;
 
 
-import com.keeplive.hln.DesktopApplication;
+import com.keeplive.hln.App;
 
 public class DpPxUtil {
 
     private static float density;
     private static float scaledDensity;
     static {
-        density = DesktopApplication.applicationContext.getResources().getDisplayMetrics().density;
-        scaledDensity = DesktopApplication.applicationContext.getResources().getDisplayMetrics().scaledDensity;
+        density = App.applicationContext.getResources().getDisplayMetrics().density;
+        scaledDensity = App.applicationContext.getResources().getDisplayMetrics().scaledDensity;
     }
     public static int getPxByDp(float dipValue){
         return (int) (dipValue*density+0.5f);

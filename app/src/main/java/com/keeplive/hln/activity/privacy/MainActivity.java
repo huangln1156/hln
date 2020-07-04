@@ -11,6 +11,7 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,6 +24,11 @@ import android.widget.Toast;
 import com.keeplive.hln.R;
 import com.keeplive.hln.activity.AboutActivity;
 import com.keeplive.hln.activity.PrivacyPolicyActivity;
+import com.keeplive.hln.network.NetType;
+import com.keeplive.hln.network.annotation.NetworkAnnotation;
+import com.keeplive.hln.network.NetworkManager;
+import com.keeplive.hln.receiver.NetStateReceiver;
+import com.keeplive.hln.utils.Constants;
 import com.keeplive.hln.utils.SPUtil;
 import com.keeplive.hln.wiget.KeyboardNum;
 import com.keeplive.hln.wiget.dialog.PrivacyDialog;
@@ -30,12 +36,14 @@ import com.keeplive.hln.wiget.dialog.PrivacyDialog;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = MainActivity.class.getSimpleName();
     private String SP_PRIVACY = "sp_privacy";
     private String SP_VERSION_CODE = "sp_version_code";
     private boolean isCheckPrivacy = false;
     private long versionCode;
     private long currentVersionCode;
     private KeyboardNum mMKeyboardView;
+    private NetStateReceiver mNetStateReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,11 +56,38 @@ public class MainActivity extends AppCompatActivity {
                 showPopupMenu(imageView);
             }
         });
-
+         NetworkManager.getInstance().init().registerObserver(this);
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
 
+    @NetworkAnnotation(netType = NetType.AUTO)
+    public void onNetChanged(NetType netType) {
+        switch (netType) {
+            case WIFI:
+                Log.e(Constants.TAG, "：WIFI CONNECT");
+                Toast.makeText(this, "：WIFI CONNECT", Toast.LENGTH_SHORT).show();
+                break;
+            case MOBILE:
+                Toast.makeText(this, "：MOBILE CONNECT", Toast.LENGTH_SHORT).show();
+                Log.e(Constants.TAG, "：MOBILE CONNECT");
+                break;
+            case AUTO:
+                Toast.makeText(this, "：AUTO CONNECT", Toast.LENGTH_SHORT).show();
+                Log.e(Constants.TAG, "：AUTO CONNECT");
+                break;
+            case NONE:
+                Log.e(Constants.TAG, "：NONE CONNECT");
+                Toast.makeText(this, "：NONE CONNECT", Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                break;
+        }
+    }
 
     /**
      * 显示用户协议和隐私政策
@@ -75,16 +110,16 @@ public class MainActivity extends AppCompatActivity {
         SpannableString spannedString = new SpannableString(string);
         //设置点击字体颜色
         ForegroundColorSpan colorSpan1 = new ForegroundColorSpan(getResources().getColor(R.color.colorBlue));
-        spannedString.setSpan(colorSpan1, index1, index1 + key1.length()+key2.length(), Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
-      //
+        spannedString.setSpan(colorSpan1, index1, index1 + key1.length() + key2.length(), Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+        //
         //
         // ForegroundColorSpan colorSpan2 = new ForegroundColorSpan(getResources().getColor(R.color.colorBlue));
-       // spannedString.setSpan(colorSpan2, index2, index2 + key2.length(), Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+        // spannedString.setSpan(colorSpan2, index2, index2 + key2.length(), Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
         //设置点击字体大小
         AbsoluteSizeSpan sizeSpan1 = new AbsoluteSizeSpan(18, true);
-        spannedString.setSpan(sizeSpan1, index1, index1 + key1.length()+key2.length(), Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
-      //  AbsoluteSizeSpan sizeSpan2 = new AbsoluteSizeSpan(18, true);
-       // spannedString.setSpan(sizeSpan2, index2, index2 + key2.length(), Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+        spannedString.setSpan(sizeSpan1, index1, index1 + key1.length() + key2.length(), Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+        //  AbsoluteSizeSpan sizeSpan2 = new AbsoluteSizeSpan(18, true);
+        // spannedString.setSpan(sizeSpan2, index2, index2 + key2.length(), Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
         //设置点击事件
         ClickableSpan clickableSpan1 = new ClickableSpan() {
             @Override
@@ -114,10 +149,10 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         spannedString.setSpan(clickableSpan2, index2, index2 + key2.length(), Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
-      //  int SPAN_EXCLUSIVE_EXCLUSIVE = 33; //在Span前后输入的字符都不应用Span效果
-       // int SPAN_EXCLUSIVE_INCLUSIVE = 34; //在Span前面输入的字符不应用Span效果，后面输入的字符应用Span效果
-       // int SPAN_INCLUSIVE_EXCLUSIVE = 17; //在Span前面输入的字符应用Span效果，后面输入的字符不应用Span效果
-       // int SPAN_INCLUSIVE_INCLUSIVE = 18; //在Span前后输入的字符都应用Span效果
+        //  int SPAN_EXCLUSIVE_EXCLUSIVE = 33; //在Span前后输入的字符都不应用Span效果
+        // int SPAN_EXCLUSIVE_INCLUSIVE = 34; //在Span前面输入的字符不应用Span效果，后面输入的字符应用Span效果
+        // int SPAN_INCLUSIVE_EXCLUSIVE = 17; //在Span前面输入的字符应用Span效果，后面输入的字符不应用Span效果
+        // int SPAN_INCLUSIVE_INCLUSIVE = 18; //在Span前后输入的字符都应用Span效果
 
 
         //设置点击后的颜色为透明，否则会一直出现高亮
@@ -156,6 +191,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
     private void showPopupMenu(View view) {
         // View当前PopupMenu显示的相对View的位置
         PopupMenu popupMenu = new PopupMenu(this, view);
@@ -209,4 +245,9 @@ public class MainActivity extends AppCompatActivity {
 //    android:textStyle="normal"
 //    android:typeface="normal" />normal
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        NetworkManager.getInstance().init().unRegisterObserver(this);
+    }
 }
