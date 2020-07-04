@@ -1,0 +1,15 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/actiosettings"
+        android:icon="@mipmap/ic_launcher"
+        android:orderInCategory="100"
+        android:title="服务记录"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_settings"
+        android:icon="@mipmap/ic_launcher"
+        android:orderInCategory="100"
+        android:title="关于"
+        app:showAsAction="never" />
+</menu>
