@@ -82,8 +82,8 @@ public class NetStateReceiver extends BroadcastReceiver {
         List<MethodManager> methodList = new ArrayList<>();
         Method[] methods = observer.getClass().getMethods();
         for (Method method : methods) {
-            NetworkAnnotation network = method.getAnnotation(NetworkAnnotation.class);
-            if (network == null) {
+            NetworkAnnotation networkAnnotation = method.getAnnotation(NetworkAnnotation.class);
+            if (networkAnnotation == null) {
                 continue;
             }
             Log.e(Constants.TAG,"NetworkCallbackImpl:NETWORK..........");
@@ -99,7 +99,7 @@ public class NetStateReceiver extends BroadcastReceiver {
             }
 
             MethodManager methodManager = new MethodManager(parameterTypes[0],
-                    network.netType(), method);
+                    networkAnnotation.netType(), method);
             methodList.add(methodManager);
         }
         return methodList;

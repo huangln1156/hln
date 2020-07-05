@@ -1,9 +1,7 @@
 package com.keeplive.hln.network;
 
-import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
-import android.net.NetworkInfo;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
@@ -21,10 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class NetworkCallbackImpl extends ConnectivityManager.NetworkCallback {
     private static final String TAG = "NetworkCallbackImpl";
-    private Map<Object, List<MethodManager>> networkList = new HashMap<>();
+    private Map<Object, List<MethodManager>> networkMapList = new HashMap<>();
     @Override
     public void onAvailable(Network network) {
         super.onAvailable(network);
@@ -59,11 +56,13 @@ public class NetworkCallbackImpl extends ConnectivityManager.NetworkCallback {
     /**
      * 通知所有注册的方法，网络发生了改变
      * @param netType
+     * 父类.class.isAssignableFrom(子类.class)
+    子类实例 instanceof 父类类型
      */
     private void post(NetType netType) {
-        Set<Object> sets = networkList.keySet();
+        Set<Object> sets = networkMapList.keySet();
         for (Object observer : sets) {
-            List<MethodManager> methodList = networkList.get(observer);
+            List<MethodManager> methodList = networkMapList.get(observer);
             for (MethodManager method : methodList) {
                 if (method.getType().isAssignableFrom(netType.getClass())) {
                     if (method.getNetType() == netType ||
@@ -90,10 +89,10 @@ public class NetworkCallbackImpl extends ConnectivityManager.NetworkCallback {
      * @param observer
      */
     public void registerObserver(Object observer) {
-        List<MethodManager> methodList = networkList.get(observer);
+        List<MethodManager> methodList = networkMapList.get(observer);
         if (methodList == null) {
             methodList = getAnnotationMethod(observer);
-            networkList.put(observer, methodList);
+            networkMapList.put(observer, methodList);
         }
     }
 
@@ -130,16 +129,16 @@ public class NetworkCallbackImpl extends ConnectivityManager.NetworkCallback {
     }
 
     public void unRegisterObserver(Object observer) {
-        if (!networkList.isEmpty()) {
-            networkList.remove(observer);
+        if (!networkMapList.isEmpty()) {
+            networkMapList.remove(observer);
         }
     }
 
     public void unRegisterAllObserver() {
-        if (!networkList.isEmpty()) {
-            networkList.clear();
+        if (!networkMapList.isEmpty()) {
+            networkMapList.clear();
         }
         NetworkManager.getInstance().getConnectivityManager().unregisterNetworkCallback(this);
-        networkList = null;
+        networkMapList = null;
     }
 }

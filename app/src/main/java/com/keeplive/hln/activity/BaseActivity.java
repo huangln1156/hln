@@ -10,7 +10,6 @@ import android.view.View;
 import android.widget.PopupWindow;
 
 import com.keeplive.hln.R;
-import com.keeplive.hln.utils.NetWorkUtil;
 import com.keeplive.hln.utils.Netwrok;
 import com.keeplive.hln.wiget.dialog.LoadingDialog;
 
@@ -33,23 +32,23 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     //当没有网络时，点击不处理事件，且显示没有网络的提示
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        switch (ev.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-              NetWorkUtil.checkNetwork();
-                if (NetWorkUtil.checkNetwork() == Netwrok.NONE) {
-                //    showNoNetDialog();
-                    return false;
-                } else {
-                    if (messageDialog != null && messageDialog.isShowing()) {
-                        messageDialog.dismiss();
-                    }
-                }
-                break;
-        }
-        return super.dispatchTouchEvent(ev);
-    }
+//    @Override
+//    public boolean dispatchTouchEvent(MotionEvent ev) {
+//        switch (ev.getAction()) {
+//            case MotionEvent.ACTION_DOWN:
+//              NetWorkUtil.checkNetwork();
+//                if (NetWorkUtil.checkNetwork() == Netwrok.NONE) {
+//                //    showNoNetDialog();
+//                    return false;
+//                } else {
+//                    if (messageDialog != null && messageDialog.isShowing()) {
+//                        messageDialog.dismiss();
+//                    }
+//                }
+//                break;
+//        }
+//        return super.dispatchTouchEvent(ev);
+//    }
 
 
     public void showNoNetDialog() {
