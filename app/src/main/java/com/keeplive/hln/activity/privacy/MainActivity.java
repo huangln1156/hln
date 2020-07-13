@@ -1,9 +1,17 @@
 package com.keeplive.hln.activity.privacy;
 
+import android.accessibilityservice.AccessibilityService;
+import android.app.Instrumentation;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.hardware.input.InputManager;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.os.SystemClock;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextPaint;
@@ -13,7 +21,11 @@ import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.Display;
+import android.view.InputDevice;
+import android.view.InputEvent;
+import android.view.KeyEvent;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -32,6 +44,14 @@ import com.keeplive.hln.utils.Constants;
 import com.keeplive.hln.utils.SPUtil;
 import com.keeplive.hln.wiget.KeyboardNum;
 import com.keeplive.hln.wiget.dialog.PrivacyDialog;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.security.Key;
+import java.util.ArrayList;
+
+import static android.view.KeyEvent.KEYCODE_BACK;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -53,10 +73,67 @@ public class MainActivity extends AppCompatActivity {
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showPopupMenu(imageView);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Instrumentation inst = new Instrumentation();
+                        inst.sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
+                        //invokeInjectInputEventMethod();
+                        Runtime runtime = Runtime.getRuntime();
+//                        try {
+//                          //  runtime.exec("input keyevent " + KeyEvent.KEYCODE_VOLUME_DOWN  );
+//                            runtime.exec("input keyevent " + KeyEvent. KEYCODE_VOLUME_UP  );
+//                            Log.e(Constants.TAG, "KEYCODE_BACK");
+//                        } catch (IOException e) { // TODO Auto-generated catch block
+//                            Log.e(Constants.TAG, "KEYCODE_BACK IOException");
+//                            e.printStackTrace();
+//                        }
+                    }
+                }).start();
+                //showPopupMenu(imageView);
             }
         });
          NetworkManager.getInstance().init().registerObserver(this);
+         InputManager
+    }
+    protected void us() {
+        setContentView(R.layout.activity_main);
+
+        textView = (TextView) findViewById(R.id.html_text);
+        textView2 = (TextView) findViewById(R.id.html_text2);
+        textView3 = (TextView) findViewById(R.id.html_text3);
+        names = new ArrayList<>();
+        counts = new ArrayList<>();
+        message = new ArrayList<>();
+
+        names.add("奥特曼");
+        names.add("白雪公主与七个小矮人");
+        names.add("沃德天·沃纳陌帅·帅德·布耀布耀德 ");
+
+        counts.add(1);
+        counts.add(123);
+        counts.add(9090909);
+
+        for (int i = 0; i < 3; i++) {
+            message.add("<font color='red' size='20'>"+names.get(i)+"</font>"+"向您发来"+
+                    "<font color='blue' size='30'>"+counts.get(i)+"</font>"+"条信息");
+        }
+
+        textView.setText(Html.fromHtml(message.get(0)));
+        textView2.setText(Html.fromHtml(message.get(1)));
+        textView3.setText(Html.fromHtml(message.get(2)));
+
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.e(Constants.TAG, "onPause");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.e(Constants.TAG, "onStop");
 
     }
 
@@ -81,8 +158,14 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(Constants.TAG, "：AUTO CONNECT");
                 break;
             case NONE:
-                Log.e(Constants.TAG, "：NONE CONNECT");
                 Toast.makeText(this, "：NONE CONNECT", Toast.LENGTH_SHORT).show();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+
+
+                    }
+                }).start();
                 break;
             default:
                 break;
@@ -192,6 +275,63 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void invokeInjectInputEventMethod( ) {
+        KeyEvent keyEvent = new KeyEvent(KeyEvent.KEYCODE_HOME, KeyEvent.KEYCODE_HOME);
+        InputManager inputManager = (InputManager) getSystemService(Context.INPUT_SERVICE);
+        Class<?> clazz = null;
+        Method injectInputEventMethod = null;
+        Method recycleMethod = null;
+        Log.e(Constants.TAG, recycleMethod+"");
+
+        try {
+            clazz = Class.forName("android.hardware.input.InputManager");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            injectInputEventMethod = clazz.getMethod("injectInputEvent", InputEvent.class, int.class);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+        try {
+            injectInputEventMethod.invoke(inputManager, keyEvent, 0);
+            // 准备回收event的方法
+            recycleMethod = keyEvent.getClass().getMethod("recycle");
+            //执行event的recycle方法
+            recycleMethod.invoke(keyEvent);
+        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            e.printStackTrace();
+            Log.e(Constants.TAG, e.toString());
+
+        }
+
+    }
+
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        return super.onKeyDown(keyCode, event);
+    }
+
+    private void invokeInjectInputEvent( ) {
+
+        InputManager inputManager = (InputManager) getSystemService(Context.INPUT_SERVICE);
+        InputEvent keyEvent = new KeyEvent(KEYCODE_BACK, KEYCODE_BACK);
+        Class cl = InputManager.class;
+        try {
+           // Method method = cl.getDeclaredMethod("getInstance");
+            Log.e(Constants.TAG, "getInstance");
+         //   Object result = method.invoke(cl);
+          //  InputManager im = (InputManager) result;
+            Log.e(Constants.TAG, inputManager.ACTION_QUERY_KEYBOARD_LAYOUTS+"");
+            Method  method = cl.getDeclaredMethod("injectInputEvent", InputEvent.class, int.class);
+            method.invoke(inputManager,keyEvent , 0);
+        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | IllegalArgumentException e) {
+            Log.e(Constants.TAG, e.toString());
+            e.printStackTrace();
+        }
+    }
     private void showPopupMenu(View view) {
         // View当前PopupMenu显示的相对View的位置
         PopupMenu popupMenu = new PopupMenu(this, view);
@@ -247,7 +387,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+
         super.onDestroy();
+        Log.e(Constants.TAG, "onDestroy");
+
         NetworkManager.getInstance().init().unRegisterObserver(this);
     }
 }
